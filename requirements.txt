@@ -5,7 +5,6 @@ altair==5.1.1
 astunparse==1.6.3
 attrs==23.1.0
 av==10.0.0
-backports.zoneinfo==0.2.1
 blinker==1.6.2
 cachetools==5.3.1
 certifi==2023.7.22
