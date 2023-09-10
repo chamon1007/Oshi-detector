@@ -2,31 +2,30 @@ import streamlit as st
 import cv2
 import tensorflow as tf
 import numpy as np
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+from streamlit_webrtc import WebRtcMode, webrtc_streamer, VideoTransformerBase
 import gc
 from tensorflow.keras import backend as K
+import av
 
-# モデルのロード
-model_path = r'saved_model'
-model = tf.saved_model.load(model_path)
+class_name = ["anpanman","baikinman","rollpanna"]
 
-class VideoTransformer(VideoTransformerBase):
-    def __init__(self):
-        self.frame_count = 0  # 追加: フレームカウンタ
+@st.cache_resource
+def load_model():
+    model_path = r'saved_model'
+    return tf.saved_model.load(model_path)
 
-    def transform(self, frame):
-        
-        img = frame.to_ndarray(format="bgr24")
+model = load_model()
 
-        # 解像度のダウンスケール
-        img = cv2.resize(img, (960, 540))
+def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
+    img = frame.to_ndarray(format="bgr24")
+    # 解像度のダウンスケール
+    img = cv2.resize(img, (960, 540))
+    result = detect_objects(img)
 
-        result = detect_objects(img)
+    # ダウンスケール後の画像を元の解像度に戻す
+    result = cv2.resize(result, (frame.width, frame.height))
 
-        # ダウンスケール後の画像を元の解像度に戻す
-        result = cv2.resize(result, (frame.width, frame.height))
-        
-        return result
+    return av.VideoFrame.from_ndarray(result, format="bgr24")
 
 def detect_objects(img):
     # 画像の前処理
@@ -43,7 +42,7 @@ def detect_objects(img):
     # 物体検出結果の表示
     for box, score, cls in zip(boxes, scores, classes):
         # Only display boxes with scores greater than 0.5
-        if score > 0.5:
+        if score > 0.8:
             # Scale box coordinates to image size
             height, width, _ = img.shape
             y1, x1, y2, x2 = box
@@ -53,13 +52,16 @@ def detect_objects(img):
             x2 = int(x2 * width)
             img = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
             # Optionally, you can display class label and score.
-            label = f"Class {int(cls)}, Score: {score:.2f}"
+            label = f"{class_name[int(cls)-1]}, Score: {score:.2f}"
             img = cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
     return img
 
-st.title("WebRTC Camera Stream and Object Detection")
-
-import streamlit as st
-    
-webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
+st.title("推しDetector(バイキンマンver)")
+webrtc_streamer(
+    key="object-detection",
+    mode=WebRtcMode.SENDRECV,
+    video_frame_callback=video_frame_callback,
+    media_stream_constraints={"video": True, "audio": False},
+    async_processing=True,
+)
