@@ -17,11 +17,11 @@ model = load_model()
 def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
     img = frame.to_ndarray(format="bgr24")
     # 解像度のダウンスケール
-    img = cv2.resize(img, (960, 540))
+    #img = cv2.resize(img, (960, 540))
     result = detect_objects(img)
 
     # ダウンスケール後の画像を元の解像度に戻す
-    result = cv2.resize(result, (frame.width, frame.height))
+    #result = cv2.resize(result, (frame.width, frame.height))
 
     return av.VideoFrame.from_ndarray(result, format="bgr24")
 
