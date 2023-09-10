@@ -63,7 +63,7 @@ webrtc_streamer(
     key="object-detection",
     mode=WebRtcMode.SENDRECV,
     video_frame_callback=video_frame_callback,
-    rtc_configuration={ "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+    rtc_configuration={ "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
     media_stream_constraints={"video": True, "audio": False},
     async_processing=True,
 )
