@@ -8,6 +8,7 @@ from tensorflow.keras import backend as K
 import av
 
 class_name = ["anpanman","baikinman","rollpanna"]
+av.logging.set_level(av.logging.ERROR)
 
 @st.cache_resource
 def load_model():
