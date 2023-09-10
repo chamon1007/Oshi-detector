@@ -3,12 +3,9 @@ import cv2
 import tensorflow as tf
 import numpy as np
 from streamlit_webrtc import WebRtcMode, webrtc_streamer, VideoTransformerBase
-import gc
-from tensorflow.keras import backend as K
 import av
 
 class_name = ["anpanman","baikinman","rollpanna"]
-av.logging.set_level(av.logging.ERROR)
 
 @st.cache_resource
 def load_model():
@@ -43,18 +40,19 @@ def detect_objects(img):
     # 物体検出結果の表示
     for box, score, cls in zip(boxes, scores, classes):
         # Only display boxes with scores greater than 0.5
-        if score > 0.8:
-            # Scale box coordinates to image size
-            height, width, _ = img.shape
-            y1, x1, y2, x2 = box
-            y1 = int(y1 * height)
-            x1 = int(x1 * width)
-            y2 = int(y2 * height)
-            x2 = int(x2 * width)
-            img = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            # Optionally, you can display class label and score.
-            label = f"{class_name[int(cls)-1]}, Score: {score:.2f}"
-            img = cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        if int(cls) == 2: #バイキンマンのみ
+            if score > 0.9:
+                # Scale box coordinates to image size
+                height, width, _ = img.shape
+                y1, x1, y2, x2 = box
+                y1 = int(y1 * height)
+                x1 = int(x1 * width)
+                y2 = int(y2 * height)
+                x2 = int(x2 * width)
+                img = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                # Optionally, you can display class label and score.
+                label = f"{class_name[int(cls)-1]}, Score: {score:.2f}"
+                img = cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
     return img
 
